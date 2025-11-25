@@ -1,0 +1,13 @@
+{
+  "name": "online-mindmap",
+  "version": "1.0.0",
+  "description": "纯静态在线思维导图应用",
+  "type": "module",
+  "scripts": {
+    "build": "echo \"No build required for static HTML\"",
+    "dev": "echo \"Open index.html directly in browser\""
+  },
+  "keywords": ["mindmap", "static", "cloudflare"],
+  "author": "Your Name",
+  "license": "MIT"
+}
