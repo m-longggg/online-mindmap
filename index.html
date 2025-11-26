@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在线思维导图 - 修复版</title>
-    <meta name="description" content="稳定可靠的在线思维导图工具">
+    <title>在线思维导图 - Tab键修复版</title>
+    <meta name="description" content="修复Tab键功能的在线思维导图工具">
     
     <!-- 使用本地库文件 -->
     <link rel="stylesheet" href="./lib/jsmind.css">
     <style>
-        /* 保持原有的所有CSS样式 */
+        /* 基础样式 */
         * {
             margin: 0;
             padding: 0;
@@ -189,6 +189,30 @@
             100% { transform: rotate(360deg); }
         }
         
+        .keyboard-shortcuts {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid #f7fafc;
+        }
+        
+        .shortcut-key {
+            background: #edf2f7;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: column;
@@ -252,15 +276,33 @@
                         <div class="feature">🔗 节点链接</div>
                         <div class="feature">📱 响应式</div>
                     </div>
-                    
-                    <div style="margin-top: 20px;">
-                        <h4>使用提示</h4>
-                        <ul style="font-size: 12px; margin-top: 10px; padding-left: 20px; color: #4a5568;">
-                            <li>双击节点编辑内容</li>
-                            <li>拖拽节点调整位置</li>
-                            <li>Ctrl+S 快速保存</li>
-                            <li>Tab键添加子节点</li>
-                        </ul>
+
+                    <div class="keyboard-shortcuts">
+                        <h4>⌨️ 键盘快捷键</h4>
+                        <div class="shortcut-item">
+                            <span>添加子节点</span>
+                            <span class="shortcut-key">Tab</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span>添加兄弟节点</span>
+                            <span class="shortcut-key">Enter</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span>编辑节点</span>
+                            <span class="shortcut-key">F2</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span>删除节点</span>
+                            <span class="shortcut-key">Delete</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span>快速保存</span>
+                            <span class="shortcut-key">Ctrl+S</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <span>放大缩小</span>
+                            <span class="shortcut-key">Ctrl+滚轮</span>
+                        </div>
                     </div>
 
                     <div style="margin-top: 20px;">
@@ -284,12 +326,12 @@
         </div>
     </div>
 
-    <!-- 加载库文件 - 确保正确的加载顺序 -->
+    <!-- 加载库文件 -->
     <script src="./lib/jsmind.js"></script>
     <script src="./lib/jsmind.draggable-node.js"></script>
     
     <script>
-        // 思维导图应用类 - 修复版本
+        // 思维导图应用类 - 修复Tab键版本
         class MindMapApp {
             constructor() {
                 this.jm = null;
@@ -329,16 +371,7 @@
                         if (window.jsMind) {
                             clearInterval(checkInterval);
                             this.updateLibraryStatus('✅ jsMind核心库加载成功', 'success');
-                            
-                            // 检查拖拽插件
-                            setTimeout(() => {
-                                if (window.jsMind.draggable) {
-                                    this.updateLibraryStatus('✅ 拖拽插件加载成功', 'success');
-                                } else {
-                                    this.updateLibraryStatus('⚠️ 拖拽插件未加载，但核心功能可用', 'info');
-                                }
-                                resolve();
-                            }, 100);
+                            resolve();
                         }
                     }, 100);
 
@@ -413,7 +446,7 @@
                     this.jm = new jsMind(options);
                     this.jm.show(mindData);
                     
-                    // 安全地启用拖拽插件 - 修复的核心部分
+                    // 安全地启用拖拽插件
                     this.enableDraggablePlugin();
                     
                     this.isInitialized = true;
@@ -432,45 +465,22 @@
             // 安全启用拖拽插件的方法
             enableDraggablePlugin() {
                 try {
-                    // 方法1: 检查标准方式
-                    if (window.jsMind && window.jsMind.draggable && typeof window.jsMind.draggable.init === 'function') {
-                        window.jsMind.draggable.init(this.jm);
-                        this.draggableEnabled = true;
-                        this.updateStatus('✅ 拖拽功能已启用', 'success');
-                        return;
-                    }
-                    
-                    // 方法2: 检查其他可能的导出方式
+                    // 多种方式尝试初始化拖拽
                     if (window.jsMind && window.jsMind.draggable) {
-                        // 尝试直接调用
-                        window.jsMind.draggable(this.jm);
-                        this.draggableEnabled = true;
-                        this.updateStatus('✅ 拖拽功能已启用', 'success');
-                        return;
-                    }
-                    
-                    // 方法3: 检查全局函数
-                    if (typeof window.jsmind_draggable_init === 'function') {
-                        window.jsmind_draggable_init(this.jm);
-                        this.draggableEnabled = true;
-                        this.updateStatus('✅ 拖拽功能已启用', 'success');
-                        return;
-                    }
-                    
-                    // 方法4: 手动检查插件对象的所有方法
-                    if (window.jsMind && window.jsMind.draggable) {
-                        const draggableObj = window.jsMind.draggable;
-                        const methods = Object.getOwnPropertyNames(draggableObj);
+                        // 方法1: 标准方式
+                        if (typeof window.jsMind.draggable.init === 'function') {
+                            window.jsMind.draggable.init(this.jm);
+                            this.draggableEnabled = true;
+                            this.updateStatus('✅ 拖拽功能已启用', 'success');
+                            return;
+                        }
                         
-                        for (let method of methods) {
-                            if (typeof draggableObj[method] === 'function' && 
-                                (method.toLowerCase().includes('init') || 
-                                 method.toLowerCase().includes('enable'))) {
-                                draggableObj[method](this.jm);
-                                this.draggableEnabled = true;
-                                this.updateStatus('✅ 拖拽功能已启用', 'success');
-                                return;
-                            }
+                        // 方法2: 尝试直接调用
+                        if (typeof window.jsMind.draggable === 'function') {
+                            window.jsMind.draggable(this.jm);
+                            this.draggableEnabled = true;
+                            this.updateStatus('✅ 拖拽功能已启用', 'success');
+                            return;
                         }
                     }
                     
@@ -484,6 +494,150 @@
                 }
             }
 
+            // 设置事件监听器 - 修复Tab键功能
+            setupEventListeners() {
+                // 键盘快捷键 - 修复Tab键监听
+                document.addEventListener('keydown', (e) => {
+                    // 保存快捷键
+                    if (e.ctrlKey && e.key === 's') {
+                        e.preventDefault();
+                        this.saveMindMap();
+                        return;
+                    }
+
+                    // 只有思维导图激活时才处理其他快捷键
+                    if (!this.isInitialized || !this.jm) return;
+
+                    const selectedNode = this.jm.get_selected_node();
+                    if (!selectedNode) return;
+
+                    switch(e.key) {
+                        case 'Tab':
+                            e.preventDefault();
+                            this.addChildNode(selectedNode);
+                            break;
+                        case 'Enter':
+                            e.preventDefault();
+                            this.addSiblingNode(selectedNode);
+                            break;
+                        case 'F2':
+                            e.preventDefault();
+                            this.editSelectedNode(selectedNode);
+                            break;
+                        case 'Delete':
+                            e.preventDefault();
+                            this.deleteSelectedNode(selectedNode);
+                            break;
+                    }
+                });
+
+                // 窗口关闭前提示保存
+                window.addEventListener('beforeunload', (e) => {
+                    if (this.hasUnsavedChanges()) {
+                        e.preventDefault();
+                        e.returnValue = '您有未保存的更改，确定要离开吗？';
+                    }
+                });
+
+                // 点击思维导图区域时更新选中节点
+                document.getElementById('jsmind_container').addEventListener('click', () => {
+                    this.updateSelectedNode();
+                });
+            }
+
+            // 添加子节点 - Tab键功能
+            addChildNode(parentNode) {
+                try {
+                    if (!this.jm || !parentNode) {
+                        this.updateStatus('❌ 请先选择一个节点', 'error');
+                        return;
+                    }
+
+                    const newNodeId = 'node_' + Date.now();
+                    const newNodeTopic = '新子节点';
+                    
+                    this.jm.add_node(parentNode, newNodeId, newNodeTopic);
+                    
+                    // 选中新创建的节点
+                    const newNodes = this.jm.get_nodes();
+                    const newNode = newNodes.find(node => node.id === newNodeId);
+                    if (newNode) {
+                        this.jm.select_node(newNode);
+                    }
+                    
+                    this.updateStatus('✅ 已添加子节点，可以开始编辑内容', 'success');
+                    
+                } catch (error) {
+                    console.error('添加子节点失败:', error);
+                    this.updateStatus('❌ 添加子节点失败: ' + error.message, 'error');
+                }
+            }
+
+            // 添加兄弟节点 - Enter键功能
+            addSiblingNode(node) {
+                try {
+                    if (!this.jm || !node || node.id === 'root') {
+                        this.updateStatus('❌ 不能为根节点添加兄弟节点', 'error');
+                        return;
+                    }
+
+                    const parentNode = this.jm.get_node(node.parentid);
+                    if (!parentNode) {
+                        this.updateStatus('❌ 找不到父节点', 'error');
+                        return;
+                    }
+
+                    const newNodeId = 'node_' + Date.now();
+                    const newNodeTopic = '新兄弟节点';
+                    
+                    this.jm.add_node(parentNode, newNodeId, newNodeTopic);
+                    
+                    // 选中新创建的节点
+                    const newNodes = this.jm.get_nodes();
+                    const newNode = newNodes.find(n => n.id === newNodeId);
+                    if (newNode) {
+                        this.jm.select_node(newNode);
+                    }
+                    
+                    this.updateStatus('✅ 已添加兄弟节点', 'success');
+                    
+                } catch (error) {
+                    console.error('添加兄弟节点失败:', error);
+                    this.updateStatus('❌ 添加兄弟节点失败: ' + error.message, 'error');
+                }
+            }
+
+            // 编辑选中节点 - F2键功能
+            editSelectedNode(node) {
+                if (!node) return;
+                
+                const newTopic = prompt('编辑节点内容:', node.topic);
+                if (newTopic !== null && newTopic.trim() !== '') {
+                    this.jm.set_node_topic(node, newTopic.trim());
+                    this.updateStatus('✅ 节点内容已更新', 'success');
+                }
+            }
+
+            // 删除选中节点 - Delete键功能
+            deleteSelectedNode(node) {
+                if (!node || node.id === 'root') {
+                    this.updateStatus('❌ 不能删除根节点', 'error');
+                    return;
+                }
+
+                if (confirm(`确定要删除节点 "${node.topic}" 吗？`)) {
+                    this.jm.remove_node(node);
+                    this.updateStatus('✅ 节点已删除', 'success');
+                }
+            }
+
+            // 更新选中的节点
+            updateSelectedNode() {
+                if (this.jm) {
+                    this.selectedNode = this.jm.get_selected_node();
+                }
+            }
+
             initializeFallback() {
                 this.updateStatus('🛠️ 启用备用文本编辑器...', 'info');
                 
@@ -493,7 +647,7 @@
                         <h3 style="margin-bottom: 15px;">😅 思维导图加载失败</h3>
                         <p style="margin-bottom: 25px;">但您仍然可以使用以下文本编辑器记录想法：</p>
                         <textarea id="fallback-editor" style="width: 100%; height: 400px; margin: 20px 0; padding: 20px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 14px; line-height: 1.5;" 
-                                  placeholder="在这里输入您的想法...&#10;&#10;提示：&#10;• 使用缩进表示层级关系&#10;• 空行分隔不同主题&#10;• 支持Markdown基础语法&#10;• 自动保存到本地存储"></textarea>
+                                  placeholder="在这里输入您的想法...&#10;&#10;提示：&#10;• 使用Tab键缩进表示层级关系&#10;• 空行分隔不同主题&#10;• 支持Markdown基础语法&#10;• 自动保存到本地存储"></textarea>
                         <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
                             <button class="btn btn-primary" onclick="mindMapApp.saveTextContent()">💾 保存文本</button>
                             <button class="btn" onclick="mindMapApp.loadTextContent()">📥 加载文本</button>
@@ -503,24 +657,23 @@
                     </div>
                 `;
                 
+                // 为备用编辑器添加Tab键支持
+                const editor = document.getElementById('fallback-editor');
+                if (editor) {
+                    editor.addEventListener('keydown', (e) => {
+                        if (e.key === 'Tab') {
+                            e.preventDefault();
+                            const start = editor.selectionStart;
+                            const end = editor.selectionEnd;
+                            
+                            // 插入Tab字符
+                            editor.value = editor.value.substring(0, start) + '\t' + editor.value.substring(end);
+                            editor.selectionStart = editor.selectionEnd = start + 1;
+                        }
+                    });
+                }
+                
                 this.loadTextContent();
-            }
-
-            setupEventListeners() {
-                // 键盘快捷键
-                document.addEventListener('keydown', (e) => {
-                    if (e.ctrlKey && e.key === 's') {
-                        e.preventDefault();
-                        this.saveMindMap();
-                    }
-                });
-
-                window.addEventListener('beforeunload', (e) => {
-                    if (this.hasUnsavedChanges()) {
-                        e.preventDefault();
-                        e.returnValue = '您有未保存的更改，确定要离开吗？';
-                    }
-                });
             }
 
             loadInitialData() {
