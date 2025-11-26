@@ -1,13 +1,23 @@
 {
-  "name": "simple-mindmap",
+  "name": "mindmap-d1-app",
   "version": "1.0.0",
-  "description": "纯JavaScript实现的在线思维导图",
+  "description": "基于 Cloudflare D1 的在线思维导图应用",
   "type": "module",
   "scripts": {
-    "build": "echo \"No build required\"",
-    "dev": "echo \"Open index.html in browser\""
+    "dev": "wrangler pages dev",
+    "deploy": "wrangler pages deploy",
+    "db:init": "wrangler d1 execute mindmap-db --file=schema.sql"
   },
-  "keywords": ["mindmap", "javascript", "standalone"],
+  "dependencies": {},
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  },
+  "keywords": [
+    "mindmap",
+    "cloudflare",
+    "d1",
+    "database"
+  ],
   "author": "Your Name",
   "license": "MIT"
 }
