@@ -1,1 +1,12 @@
 
+name = "mindmap-d1-app"
+compatibility_date = "2024-01-15"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mindmap-db"
+database_id = "online-mindmap"
+
+[env.production]
+routes = ["https://your-domain.pages.dev/*"]
