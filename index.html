@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在线思维导图 - 稳定版</title>
-    <meta name="description" content="稳定可靠的在线思维导图工具，无需本地依赖">
+    <title>在线思维导图 - 基于指定模板</title>
+    <meta name="description" content="基于指定GitHub模板的稳定在线思维导图工具">
     
-    <!-- 多重CDN引入jsMind -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsmind@0.7.6/style/jsmind.css">
+    <!-- 使用本地库文件 -->
+    <link rel="stylesheet" href="./lib/jsmind.css">
     <style>
-        /* 内联所有关键CSS */
+        /* 自定义样式增强 */
         * {
             margin: 0;
             padding: 0;
@@ -21,6 +21,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: #333;
+            overflow-x: hidden;
         }
         
         .container {
@@ -30,14 +31,15 @@
         }
         
         .app-wrapper {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.98);
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             overflow: hidden;
+            backdrop-filter: blur(10px);
         }
         
         .header {
-            background: #2d3748;
+            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
             color: white;
             padding: 20px 30px;
             display: flex;
@@ -50,9 +52,13 @@
         .logo {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             font-size: 1.5rem;
             font-weight: bold;
+        }
+        
+        .logo-icon {
+            font-size: 1.8rem;
         }
         
         .controls {
@@ -62,35 +68,51 @@
         }
         
         .btn {
-            background: #4299e1;
+            background: rgba(255, 255, 255, 0.1);
             color: white;
-            border: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             padding: 10px 20px;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
             transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
         
         .btn:hover {
-            background: #3182ce;
+            background: rgba(255, 255, 255, 0.2);
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .btn-primary {
+            background: #4299e1;
+            border-color: #4299e1;
+        }
+        
+        .btn-primary:hover {
+            background: #3182ce;
+            border-color: #3182ce;
         }
         
         .btn-success {
             background: #48bb78;
+            border-color: #48bb78;
         }
         
         .btn-success:hover {
             background: #38a169;
+            border-color: #38a169;
         }
         
         .btn-danger {
             background: #e53e3e;
+            border-color: #e53e3e;
         }
         
         .btn-danger:hover {
             background: #c53030;
+            border-color: #c53030;
         }
         
         .main-content {
@@ -99,16 +121,37 @@
         }
         
         .sidebar {
-            width: 280px;
-            background: #f7fafc;
-            padding: 20px;
+            width: 300px;
+            background: #f8fafc;
+            padding: 25px;
             border-right: 1px solid #e2e8f0;
             overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            width: 60px;
+            padding: 15px 10px;
+        }
+        
+        .sidebar.collapsed .sidebar-content {
+            display: none;
+        }
+        
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #4a5568;
+            margin-bottom: 15px;
         }
         
         .mindmap-area {
             flex: 1;
-            padding: 20px;
+            padding: 25px;
+            background: #f7fafc;
+            position: relative;
         }
         
         #jsmind_container {
@@ -116,77 +159,147 @@
             height: 100%;
             background: white;
             border: 2px solid #e2e8f0;
-            border-radius: 8px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        #jsmind_container:hover {
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
         }
         
         .status-panel {
-            background: #edf2f7;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
         
         .status-item {
-            margin: 8px 0;
-            padding: 8px 12px;
-            border-radius: 4px;
+            margin: 10px 0;
+            padding: 12px 15px;
+            border-radius: 8px;
             font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         .status-success {
-            background: #c6f6d5;
+            background: linear-gradient(135deg, #c6f6d5, #9ae6b4);
             color: #22543d;
-            border-left: 3px solid #48bb78;
+            border-left: 4px solid #48bb78;
         }
         
         .status-error {
-            background: #fed7d7;
+            background: linear-gradient(135deg, #fed7d7, #feb2b2);
             color: #742a2a;
-            border-left: 3px solid #e53e3e;
+            border-left: 4px solid #e53e3e;
         }
         
         .status-loading {
-            background: #fefcbf;
+            background: linear-gradient(135deg, #fefcbf, #faf089);
             color: #744210;
-            border-left: 3px solid #d69e2e;
+            border-left: 4px solid #d69e2e;
         }
         
         .status-info {
-            background: #bee3f8;
+            background: linear-gradient(135deg, #bee3f8, #90cdf4);
             color: #2a4365;
-            border-left: 3px solid #3182ce;
+            border-left: 4px solid #3182ce;
         }
         
         .feature-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
+            gap: 12px;
+            margin: 20px 0;
         }
         
         .feature {
             background: white;
-            padding: 10px;
-            border-radius: 6px;
+            padding: 15px 10px;
+            border-radius: 8px;
             text-align: center;
             font-size: 12px;
             border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .feature:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-color: #4299e1;
         }
         
         .loading-spinner {
             width: 20px;
             height: 20px;
-            border: 2px solid #e2e8f0;
-            border-top: 2px solid #4299e1;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid currentColor;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            display: inline-block;
-            margin-right: 10px;
         }
         
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+        
+        .tooltip::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2d3748;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        
+        .tooltip:hover::after {
+            opacity: 1;
+        }
+        
+        .context-menu {
+            position: absolute;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            padding: 8px 0;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .context-menu-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .context-menu-item:hover {
+            background: #f7fafc;
+        }
+        
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 250px;
+            }
         }
         
         @media (max-width: 768px) {
@@ -200,9 +313,15 @@
                 height: auto;
             }
             
+            .sidebar.collapsed {
+                width: 100%;
+                height: 60px;
+            }
+            
             .header {
                 flex-direction: column;
                 gap: 15px;
+                text-align: center;
             }
             
             .controls {
@@ -212,15 +331,40 @@
             #jsmind_container {
                 height: 500px;
             }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
-        /* jsMind 主题优化 */
-        .jsmind-inner {
-            background: #f7fafc !important;
-        }
-        
-        jmnodes {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        /* 暗色主题支持 */
+        @media (prefers-color-scheme: dark) {
+            .app-wrapper {
+                background: rgba(45, 55, 72, 0.95);
+                color: #e2e8f0;
+            }
+            
+            .sidebar {
+                background: #2d3748;
+                border-right-color: #4a5568;
+            }
+            
+            .status-panel {
+                background: #4a5568;
+                border-color: #718096;
+                color: #e2e8f0;
+            }
+            
+            .feature {
+                background: #4a5568;
+                border-color: #718096;
+                color: #e2e8f0;
+            }
+            
+            #jsmind_container {
+                background: #2d3748;
+                border-color: #4a5568;
+            }
         }
     </style>
 </head>
@@ -229,64 +373,81 @@
         <div class="app-wrapper">
             <header class="header">
                 <div class="logo">
-                    <span>🧠</span>
+                    <span class="logo-icon">🧠</span>
                     <span>在线思维导图</span>
                 </div>
                 <div class="controls">
-                    <button class="btn" onclick="mindMapApp.createNewMindMap()">新建</button>
-                    <button class="btn" onclick="mindMapApp.saveMindMap()">保存</button>
-                    <button class="btn" onclick="mindMapApp.exportMindMap()">导出</button>
-                    <button class="btn btn-success" onclick="mindMapApp.loadMindMap()">加载</button>
-                    <button class="btn btn-danger" onclick="mindMapApp.resetMindMap()">重置</button>
+                    <button class="btn btn-primary tooltip" data-tooltip="创建新导图" onclick="mindMapApp.createNewMindMap()">
+                        📄 新建
+                    </button>
+                    <button class="btn tooltip" data-tooltip="保存到本地" onclick="mindMapApp.saveMindMap()">
+                        💾 保存
+                    </button>
+                    <button class="btn tooltip" data-tooltip="导出为JSON" onclick="mindMapApp.exportMindMap()">
+                        📤 导出
+                    </button>
+                    <button class="btn btn-success tooltip" data-tooltip="从本地加载" onclick="mindMapApp.loadMindMap()">
+                        📥 加载
+                    </button>
+                    <button class="btn btn-danger tooltip" data-tooltip="重置所有内容" onclick="mindMapApp.resetMindMap()">
+                        🔄 重置
+                    </button>
                 </div>
             </header>
             
             <div class="main-content">
-                <aside class="sidebar">
-                    <div class="status-panel">
-                        <h3>系统状态</h3>
-                        <div id="status-messages">
-                            <div class="status-item status-loading">
-                                <div class="loading-spinner"></div>
-                                正在初始化应用...
+                <aside class="sidebar" id="sidebar">
+                    <button class="toggle-sidebar" onclick="mindMapApp.toggleSidebar()">☰</button>
+                    <div class="sidebar-content">
+                        <div class="status-panel">
+                            <h3>📊 系统状态</h3>
+                            <div id="status-messages">
+                                <div class="status-item status-loading">
+                                    <div class="loading-spinner"></div>
+                                    正在初始化应用...
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="feature-grid">
-                        <div class="feature">✨ 可视化编辑</div>
-                        <div class="feature">💾 本地存储</div>
-                        <div class="feature">📥 导入导出</div>
-                        <div class="feature">🎨 主题样式</div>
-                        <div class="feature">🔗 节点链接</div>
-                        <div class="feature">📱 响应式</div>
-                    </div>
-                    
-                    <div style="margin-top: 20px;">
-                        <h4>使用提示</h4>
-                        <ul style="font-size: 12px; margin-top: 10px; padding-left: 20px; color: #4a5568;">
-                            <li>双击节点编辑内容</li>
-                            <li>右键点击显示菜单</li>
-                            <li>拖拽节点调整位置</li>
-                            <li>Ctrl+S 快速保存</li>
-                            <li>Tab键添加子节点</li>
-                        </ul>
-                    </div>
+                        
+                        <div class="feature-grid">
+                            <div class="feature tooltip" data-tooltip="拖拽节点进行编辑">✨ 拖拽编辑</div>
+                            <div class="feature tooltip" data-tooltip="数据保存在浏览器中">💾 本地存储</div>
+                            <div class="feature tooltip" data-tooltip="支持JSON格式导入导出">📥 导入导出</div>
+                            <div class="feature tooltip" data-tooltip="多种主题样式可选">🎨 主题样式</div>
+                            <div class="feature tooltip" data-tooltip="节点间可创建链接">🔗 节点链接</div>
+                            <div class="feature tooltip" data-tooltip="支持手机和平板">📱 响应式</div>
+                        </div>
+                        
+                        <div style="margin-top: 25px;">
+                            <h4>💡 使用提示</h4>
+                            <ul style="font-size: 13px; margin-top: 12px; padding-left: 20px; color: #4a5568; line-height: 1.5;">
+                                <li>双击节点编辑内容</li>
+                                <li>右键点击显示操作菜单</li>
+                                <li>拖拽节点调整位置关系</li>
+                                <li>Ctrl+S 快速保存导图</li>
+                                <li>Tab键快速添加子节点</li>
+                                <li>Delete键删除选中节点</li>
+                            </ul>
+                        </div>
 
-                    <div style="margin-top: 20px;">
-                        <h4>库加载状态</h4>
-                        <div id="library-status" class="status-item status-info">
-                            等待加载...
+                        <div style="margin-top: 25px;">
+                            <h4>🔧 库加载状态</h4>
+                            <div id="library-status" class="status-item status-info">
+                                📦 等待加载库文件...
+                            </div>
                         </div>
                     </div>
                 </aside>
                 
                 <main class="mindmap-area">
                     <div id="jsmind_container">
-                        <div style="padding: 40px; text-align: center; color: #666;">
-                            <h3>正在加载思维导图...</h3>
-                            <p>如果长时间未加载，请检查网络连接</p>
-                            <div class="loading-spinner" style="width: 40px; height: 40px; margin: 20px auto;"></div>
+                        <div style="padding: 50px; text-align: center; color: #666;">
+                            <h3 style="margin-bottom: 15px;">🎯 正在加载思维导图...</h3>
+                            <p style="margin-bottom: 25px;">基于指定GitHub模板构建的稳定版本</p>
+                            <div class="loading-spinner" style="width: 40px; height: 40px; margin: 0 auto; color: #4299e1;"></div>
+                            <div style="margin-top: 25px; font-size: 14px; color: #718096;">
+                                <p>如果长时间未加载，请检查网络连接</p>
+                            </div>
                         </div>
                     </div>
                 </main>
@@ -294,150 +455,85 @@
         </div>
     </div>
 
+    <!-- 右键上下文菜单 -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" onclick="mindMapApp.addChildNode()">添加子节点</div>
+        <div class="context-menu-item" onclick="mindMapApp.editNode()">编辑节点</div>
+        <div class="context-menu-item" onclick="mindMapApp.deleteNode()">删除节点</div>
+        <div class="context-menu-item" onclick="mindMapApp.changeNodeColor()">更改颜色</div>
+    </div>
+
+    <!-- 加载库文件 -->
+    <script src="./lib/jsmind.js"></script>
+    <script src="./lib/jsmind.draggable-node.js"></script>
+    
     <script>
         // 思维导图应用类
         class MindMapApp {
             constructor() {
                 this.jm = null;
                 this.isInitialized = false;
-                this.libraryLoadAttempts = 0;
-                this.maxLoadAttempts = 3;
+                this.selectedNode = null;
+                this.libraryStatus = 'loading';
                 
                 this.init();
             }
 
             async init() {
                 try {
-                    this.updateStatus('正在初始化思维导图应用...', 'loading');
+                    this.updateStatus('🚀 正在初始化思维导图应用...', 'loading');
                     
-                    // 加载jsMind库
-                    await this.loadJsMindLibrary();
+                    // 检查库文件加载状态
+                    await this.checkLibraryStatus();
                     
                     // 初始化思维导图
                     if (window.jsMind) {
                         this.initializeMindMap();
                     } else {
-                        this.updateStatus('jsMind库未正确加载，启用备用方案', 'error');
+                        this.updateStatus('❌ jsMind库未正确加载', 'error');
                         this.initializeFallback();
                     }
                     
                 } catch (error) {
                     console.error('应用初始化失败:', error);
-                    this.updateStatus('初始化失败: ' + error.message, 'error');
+                    this.updateStatus('❌ 初始化失败: ' + error.message, 'error');
                     this.initializeFallback();
                 }
             }
 
-            // 加载jsMind库 - 多重备用方案
-            loadJsMindLibrary() {
+            // 检查库文件加载状态
+            checkLibraryStatus() {
                 return new Promise((resolve) => {
-                    this.updateLibraryStatus('开始加载思维导图库...', 'loading');
-                    
-                    // 如果已经加载，直接返回
-                    if (window.jsMind) {
-                        this.updateLibraryStatus('jsMind库已加载', 'success');
-                        resolve();
-                        return;
-                    }
-
-                    const cdnSources = [
-                        {
-                            name: 'jsDelivr (主要)',
-                            script: 'https://cdn.jsdelivr.net/npm/jsmind@0.7.6/es6/jsmind.js',
-                            css: 'https://cdn.jsdelivr.net/npm/jsmind@0.7.6/style/jsmind.css'
-                        },
-                        {
-                            name: 'unpkg (备用1)',
-                            script: 'https://unpkg.com/jsmind@0.7.6/es6/jsmind.js',
-                            css: 'https://unpkg.com/jsmind@0.7.6/style/jsmind.css'
-                        },
-                        {
-                            name: 'cdnjs (备用2)',
-                            script: 'https://cdnjs.cloudflare.com/ajax/libs/jsmind/0.7.6/jsmind.min.js',
-                            css: 'https://cdnjs.cloudflare.com/ajax/libs/jsmind/0.7.6/jsmind.css'
+                    const checkInterval = setInterval(() => {
+                        if (window.jsMind) {
+                            clearInterval(checkInterval);
+                            this.libraryStatus = 'loaded';
+                            this.updateLibraryStatus('✅ 所有库文件加载成功', 'success');
+                            resolve();
                         }
-                    ];
+                    }, 100);
 
-                    const tryLoadSource = (index) => {
-                        if (index >= cdnSources.length) {
-                            this.updateLibraryStatus('所有CDN源都加载失败', 'error');
-                            resolve(); // 仍然resolve，让应用继续
-                            return;
+                    // 设置超时
+                    setTimeout(() => {
+                        clearInterval(checkInterval);
+                        if (!window.jsMind) {
+                            this.libraryStatus = 'failed';
+                            this.updateLibraryStatus('❌ 库文件加载超时', 'error');
+                            resolve(); // 仍然继续初始化
                         }
-
-                        const source = cdnSources[index];
-                        this.updateLibraryStatus(`尝试从 ${source.name} 加载...`, 'loading');
-
-                        // 加载CSS
-                        this.loadCSS(source.css, source.name)
-                            .then(() => {
-                                // 加载JS
-                                return this.loadScript(source.script, source.name);
-                            })
-                            .then(() => {
-                                if (window.jsMind) {
-                                    this.updateLibraryStatus(`✅ 成功从 ${source.name} 加载`, 'success');
-                                    this.libraryLoadAttempts = 0;
-                                    resolve();
-                                } else {
-                                    throw new Error('库未定义');
-                                }
-                            })
-                            .catch((error) => {
-                                console.warn(`${source.name} 加载失败:`, error);
-                                this.updateLibraryStatus(`❌ ${source.name} 加载失败`, 'error');
-                                
-                                // 尝试下一个源
-                                setTimeout(() => tryLoadSource(index + 1), 1000);
-                            });
-                    };
-
-                    // 开始尝试加载
-                    tryLoadSource(0);
-                });
-            }
-
-            loadScript(src, sourceName) {
-                return new Promise((resolve, reject) => {
-                    // 检查是否已加载
-                    if (document.querySelector(`script[src="${src}"]`)) {
-                        resolve();
-                        return;
-                    }
-
-                    const script = document.createElement('script');
-                    script.src = src;
-                    script.onload = resolve;
-                    script.onerror = () => reject(new Error(`${sourceName} 脚本加载失败`));
-                    document.head.appendChild(script);
-                });
-            }
-
-            loadCSS(href, sourceName) {
-                return new Promise((resolve, reject) => {
-                    // 检查是否已加载
-                    if (document.querySelector(`link[href="${href}"]`)) {
-                        resolve();
-                        return;
-                    }
-
-                    const link = document.createElement('link');
-                    link.rel = 'stylesheet';
-                    link.href = href;
-                    link.onload = resolve;
-                    link.onerror = () => reject(new Error(`${sourceName} CSS加载失败`));
-                    document.head.appendChild(link);
+                    }, 5000);
                 });
             }
 
             initializeMindMap() {
                 try {
-                    this.updateStatus('正在初始化思维导图...', 'loading');
+                    this.updateStatus('🎨 正在初始化思维导图...', 'loading');
                     
                     if (typeof jsMind === 'undefined') {
                         throw new Error('jsMind 库未正确加载');
                     }
 
+                    // 配置选项
                     const options = {
                         container: 'jsmind_container',
                         theme: 'primary',
@@ -456,40 +552,59 @@
                         "data": {
                             "id": "root",
                             "topic": "🧠 我的思维导图",
+                            "background-color": "#4299e1",
+                            "foreground-color": "#ffffff",
                             "children": [
                                 {
-                                    "id": "sub1",
+                                    "id": "ideas",
                                     "topic": "💡 创意想法",
+                                    "background-color": "#48bb78",
+                                    "foreground-color": "#ffffff",
                                     "children": [
-                                        {"id": "sub1_1", "topic": "项目规划"},
-                                        {"id": "sub1_2", "topic": "学习笔记"}
+                                        {"id": "project", "topic": "项目规划"},
+                                        {"id": "learning", "topic": "学习笔记"},
+                                        {"id": "research", "topic": "研究思路"}
                                     ]
                                 },
                                 {
-                                    "id": "sub2", 
+                                    "id": "tasks", 
                                     "topic": "📝 任务清单",
+                                    "background-color": "#ed8936",
+                                    "foreground-color": "#ffffff",
                                     "children": [
-                                        {"id": "sub2_1", "topic": "重要事项"},
-                                        {"id": "sub2_2", "topic": "日常任务"}
+                                        {"id": "important", "topic": "重要事项"},
+                                        {"id": "daily", "topic": "日常任务"},
+                                        {"id": "goals", "topic": "目标设定"}
                                     ]
                                 },
                                 {
-                                    "id": "sub3",
-                                    "topic": "🎯 目标设定",
+                                    "id": "resources",
+                                    "topic": "📚 资源整理",
+                                    "background-color": "#9f7aea",
+                                    "foreground-color": "#ffffff",
                                     "children": [
-                                        {"id": "sub3_1", "topic": "短期目标"},
-                                        {"id": "sub3_2", "topic": "长期规划"}
+                                        {"id": "books", "topic": "书籍推荐"},
+                                        {"id": "tools", "topic": "实用工具"},
+                                        {"id": "links", "topic": "参考链接"}
                                     ]
                                 }
                             ]
                         }
                     };
 
+                    // 创建思维导图实例
                     this.jm = new jsMind(options);
                     this.jm.show(mindData);
+                    
+                    // 启用拖拽插件
+                    if (window.jsMind.draggable && this.jm) {
+                        jsMind.draggable.init(this.jm);
+                        this.updateStatus('✅ 拖拽功能已启用', 'success');
+                    }
+                    
                     this.isInitialized = true;
                     
-                    this.updateStatus('✅ 思维导图初始化成功！开始您的创作吧！', 'success');
+                    this.updateStatus('🎉 思维导图初始化成功！开始您的创作吧！', 'success');
                     this.setupEventListeners();
                     this.loadInitialData();
                     
@@ -501,20 +616,20 @@
             }
 
             initializeFallback() {
-                this.updateStatus('启用备用文本编辑器...', 'info');
+                this.updateStatus('🛠️ 启用备用文本编辑器...', 'info');
                 
                 const container = document.getElementById('jsmind_container');
                 container.innerHTML = `
                     <div style="padding: 40px; text-align: center; color: #666;">
-                        <h3>😅 思维导图加载失败</h3>
-                        <p>但您仍然可以使用以下文本编辑器记录想法：</p>
-                        <textarea id="fallback-editor" style="width: 100%; height: 400px; margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; font-family: monospace;" 
-                                  placeholder="在这里输入您的想法...&#10;&#10;提示：&#10;- 使用缩进表示层级关系&#10;- 空行分隔不同主题&#10;- 支持Markdown基础语法"></textarea>
-                        <div>
-                            <button class="btn" onclick="mindMapApp.saveTextContent()">保存文本</button>
-                            <button class="btn" onclick="mindMapApp.loadTextContent()">加载文本</button>
-                            <button class="btn" onclick="mindMapApp.exportTextContent()">导出文本</button>
-                            <button class="btn btn-success" onclick="location.reload()">重新加载</button>
+                        <h3 style="margin-bottom: 15px;">😅 思维导图加载失败</h3>
+                        <p style="margin-bottom: 25px;">但您仍然可以使用以下文本编辑器记录想法：</p>
+                        <textarea id="fallback-editor" style="width: 100%; height: 400px; margin: 20px 0; padding: 20px; border: 2px solid #e2e8f0; border-radius: 8px; font-family: inherit; font-size: 14px; line-height: 1.5;" 
+                                  placeholder="在这里输入您的想法...&#10;&#10;提示：&#10;• 使用缩进表示层级关系&#10;• 空行分隔不同主题&#10;• 支持Markdown基础语法&#10;• 自动保存到本地存储"></textarea>
+                        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                            <button class="btn btn-primary" onclick="mindMapApp.saveTextContent()">💾 保存文本</button>
+                            <button class="btn" onclick="mindMapApp.loadTextContent()">📥 加载文本</button>
+                            <button class="btn" onclick="mindMapApp.exportTextContent()">📤 导出文本</button>
+                            <button class="btn btn-success" onclick="location.reload()">🔄 重新加载</button>
                         </div>
                     </div>
                 `;
@@ -529,6 +644,23 @@
                         e.preventDefault();
                         this.saveMindMap();
                     }
+                    
+                    // 添加节点快捷键
+                    if (e.key === 'Tab' && this.jm && this.jm.get_selected_node()) {
+                        e.preventDefault();
+                        this.addChildNode();
+                    }
+                });
+
+                // 右键菜单
+                document.getElementById('jsmind_container').addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    this.showContextMenu(e.clientX, e.clientY);
+                });
+
+                // 点击其他地方隐藏右键菜单
+                document.addEventListener('click', () => {
+                    this.hideContextMenu();
                 });
 
                 // 窗口关闭前提示保存
@@ -538,6 +670,66 @@
                         e.returnValue = '您有未保存的更改，确定要离开吗？';
                     }
                 });
+            }
+
+            showContextMenu(x, y) {
+                const contextMenu = document.getElementById('contextMenu');
+                contextMenu.style.display = 'block';
+                contextMenu.style.left = x + 'px';
+                contextMenu.style.top = y + 'px';
+                
+                // 更新选中的节点
+                if (this.jm) {
+                    this.selectedNode = this.jm.get_selected_node();
+                }
+            }
+
+            hideContextMenu() {
+                const contextMenu = document.getElementById('contextMenu');
+                contextMenu.style.display = 'none';
+            }
+
+            addChildNode() {
+                if (this.jm && this.selectedNode) {
+                    const newNodeId = 'node_' + Date.now();
+                    this.jm.add_node(this.selectedNode, newNodeId, '新节点');
+                    this.updateStatus('✅ 已添加新节点', 'success');
+                }
+                this.hideContextMenu();
+            }
+
+            editNode() {
+                if (this.jm && this.selectedNode) {
+                    const newTopic = prompt('请输入新内容:', this.selectedNode.topic);
+                    if (newTopic !== null) {
+                        this.jm.set_node_topic(this.selectedNode, newTopic);
+                        this.updateStatus('✅ 节点已更新', 'success');
+                    }
+                }
+                this.hideContextMenu();
+            }
+
+            deleteNode() {
+                if (this.jm && this.selectedNode && this.selectedNode.id !== 'root') {
+                    if (confirm('确定要删除这个节点吗？')) {
+                        this.jm.remove_node(this.selectedNode);
+                        this.updateStatus('✅ 节点已删除', 'success');
+                    }
+                } else {
+                    alert('不能删除根节点！');
+                }
+                this.hideContextMenu();
+            }
+
+            changeNodeColor() {
+                if (this.jm && this.selectedNode) {
+                    const color = prompt('请输入颜色代码 (如 #4299e1):', '#4299e1');
+                    if (color) {
+                        this.jm.set_node_background_color(this.selectedNode, color);
+                        this.updateStatus('✅ 节点颜色已更新', 'success');
+                    }
+                }
+                this.hideContextMenu();
             }
 
             loadInitialData() {
@@ -585,7 +777,7 @@
                         this.updateStatus('✅ 思维导图已保存到本地存储', 'success');
                     } else {
                         this.updateStatus('❌ 无法保存：思维导图未初始化', 'error');
-                    this.saveTextContent(); // 备用保存
+                        this.saveTextContent(); // 备用保存
                     }
                 } catch (error) {
                     this.updateStatus('❌ 保存失败: ' + error.message, 'error');
@@ -645,6 +837,11 @@
                     }
                     this.updateStatus('✅ 已重置所有数据', 'success');
                 }
+            }
+
+            toggleSidebar() {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('collapsed');
             }
 
             // 备用文本编辑器功能
