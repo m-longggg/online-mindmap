@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在线思维导图 - 独立版</title>
+    <title>在线思维导图 - Cloudflare D1 版</title>
     <style>
         * {
             margin: 0;
@@ -50,6 +50,12 @@
             font-weight: bold;
         }
         
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
         .controls {
             display: flex;
             gap: 10px;
@@ -94,7 +100,7 @@
         }
         
         .sidebar {
-            width: 280px;
+            width: 320px;
             background: #f7fafc;
             padding: 20px;
             border-right: 1px solid #e2e8f0;
@@ -156,104 +162,84 @@
             border-left: 3px solid #3182ce;
         }
         
-        .feature-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
+        .auth-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
         }
         
-        .feature {
+        .auth-form {
             background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            max-width: 90%;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
             padding: 10px;
-            border-radius: 6px;
-            text-align: center;
-            font-size: 12px;
             border: 1px solid #e2e8f0;
-        }
-        
-        .loading-spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid #e2e8f0;
-            border-top: 2px solid #4299e1;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            margin-right: 10px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* 思维导图节点样式 */
-        .mindmap-node {
-            position: absolute;
-            background: white;
-            border: 2px solid #4299e1;
-            border-radius: 8px;
-            padding: 10px 15px;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            min-width: 120px;
-            text-align: center;
-            z-index: 10;
-        }
-        
-        .mindmap-node:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        }
-        
-        .mindmap-node.root {
-            background: #4299e1;
-            color: white;
-            font-weight: bold;
-            font-size: 18px;
-        }
-        
-        .mindmap-node.child {
-            background: white;
-            color: #2d3748;
+            border-radius: 5px;
             font-size: 14px;
         }
         
-        .mindmap-node.selected {
-            border-color: #e53e3e;
-            box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.2);
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
         }
         
-        .mindmap-connection {
-            position: absolute;
-            background: #a0aec0;
-            z-index: 1;
-            transform-origin: 0 0;
+        .mindmap-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
         }
         
-        .node-content {
-            pointer-events: none;
+        .mindmap-item {
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
         
-        .node-edit {
-            display: none;
-            width: 100%;
-            border: none;
-            background: transparent;
-            text-align: center;
-            font-size: inherit;
-            font-family: inherit;
-            outline: none;
+        .mindmap-item:hover {
+            border-color: #4299e1;
+            background: #ebf8ff;
         }
         
-        .mindmap-node.editing .node-content {
-            display: none;
+        .mindmap-item.active {
+            border-color: #4299e1;
+            background: #bee3f8;
         }
         
-        .mindmap-node.editing .node-edit {
-            display: block;
+        .mindmap-title {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .mindmap-meta {
+            font-size: 12px;
+            color: #718096;
         }
         
         @media (max-width: 768px) {
@@ -282,14 +268,18 @@
             <header class="header">
                 <div class="logo">
                     <span>🧠</span>
-                    <span>在线思维导图</span>
+                    <span>在线思维导图 - D1 数据库版</span>
                 </div>
-                <div class="controls">
+                <div class="user-info" id="user-info">
+                    <span>请登录</span>
+                    <button class="btn" onclick="showAuthModal()">登录/注册</button>
+                </div>
+                <div class="controls" id="controls" style="display: none;">
                     <button class="btn" id="btn-new">新建</button>
-                    <button class="btn" id="btn-save">保存</button>
-                    <button class="btn" id="btn-export">导出</button>
-                    <button class="btn btn-success" id="btn-load">加载</button>
-                    <button class="btn btn-danger" id="btn-reset">重置</button>
+                    <button class="btn" id="btn-save">保存到云端</button>
+                    <button class="btn" id="btn-load">从云端加载</button>
+                    <button class="btn" id="btn-share">分享</button>
+                    <button class="btn btn-danger" onclick="logout()">退出</button>
                 </div>
             </header>
             
@@ -298,503 +288,399 @@
                     <div class="status-panel">
                         <h3>系统状态</h3>
                         <div id="status-messages">
-                            <div class="status-item status-success">
-                                ✅ 独立版思维导图已就绪
+                            <div class="status-item status-info">
+                                ℹ️ 请登录以使用云端功能
                             </div>
                         </div>
                     </div>
                     
-                    <div class="feature-grid">
-                        <div class="feature">✨ 纯JS实现</div>
-                        <div class="feature">💾 本地存储</div>
-                        <div class="feature">📥 导入导出</div>
-                        <div class="feature">🎨 拖拽编辑</div>
-                        <div class="feature">🔗 节点连接</div>
-                        <div class="feature">📱 响应式</div>
-                    </div>
-
-                    <div style="margin-top: 20px;">
-                        <h4>使用说明</h4>
-                        <ul style="font-size: 12px; margin-top: 10px; padding-left: 20px; color: #4a5568; line-height: 1.5;">
-                            <li>点击节点进行选择</li>
-                            <li>双击节点编辑内容</li>
-                            <li>拖拽节点调整位置</li>
-                            <li>按Tab键添加子节点</li>
-                            <li>按Enter键添加兄弟节点</li>
-                            <li>按Delete键删除节点</li>
-                            <li>Ctrl+S快速保存</li>
-                        </ul>
+                    <div id="cloud-mindmaps" style="display: none;">
+                        <h4>云端思维导图</h4>
+                        <div class="mindmap-list" id="mindmap-list">
+                            <!-- 云端思维导图列表 -->
+                        </div>
                     </div>
                 </aside>
                 
                 <main class="mindmap-area">
                     <div id="mindmap-container">
-                        <!-- 思维导图将在这里渲染 -->
+                        <div style="padding: 40px; text-align: center; color: #666;">
+                            <h3>🧠 在线思维导图</h3>
+                            <p>基于 Cloudflare D1 数据库的云端思维导图工具</p>
+                            <p>登录后即可保存到云端，随时随地访问您的思维导图</p>
+                            <button class="btn btn-success" onclick="showAuthModal()" style="margin-top: 20px;">
+                                立即登录/注册
+                            </button>
+                        </div>
                     </div>
                 </main>
             </div>
         </div>
     </div>
 
+    <!-- 登录/注册模态框 -->
+    <div class="auth-modal" id="auth-modal">
+        <div class="auth-form">
+            <h3 style="margin-bottom: 20px; text-align: center;">用户认证</h3>
+            <div class="form-group">
+                <label>邮箱</label>
+                <input type="email" id="auth-email" placeholder="请输入邮箱">
+            </div>
+            <div class="form-group">
+                <label>用户名</label>
+                <input type="text" id="auth-username" placeholder="请输入用户名">
+            </div>
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" id="auth-password" placeholder="请输入密码">
+            </div>
+            <div class="form-actions">
+                <button class="btn" onclick="hideAuthModal()">取消</button>
+                <button class="btn" onclick="login()">登录</button>
+                <button class="btn btn-success" onclick="register()">注册</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // 独立版思维导图应用
-        class SimpleMindMap {
-            constructor(containerId) {
-                this.container = document.getElementById(containerId);
-                this.nodes = [];
-                this.connections = [];
-                this.selectedNode = null;
-                this.nextNodeId = 1;
-                this.isDragging = false;
-                this.dragOffset = { x: 0, y: 0 };
-                
-                this.init();
+        // 应用状态
+        const AppState = {
+            user: null,
+            token: null,
+            currentMindMap: null,
+            mindMaps: [],
+            mindMapInstance: null
+        };
+
+        // API 基础URL
+        const API_BASE = '/api';
+
+        // API 调用函数
+        async function apiCall(endpoint, options = {}) {
+            const url = `${API_BASE}/${endpoint}`;
+            const config = {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                ...options
+            };
+
+            if (AppState.token) {
+                config.headers.Authorization = `Bearer ${AppState.token}`;
             }
-            
-            init() {
-                this.container.innerHTML = '';
-                this.nodes = [];
-                this.connections = [];
-                this.selectedNode = null;
-                
-                // 创建根节点
-                this.createNode('中心主题', 400, 300, true);
-                
-                // 添加事件监听
-                this.setupEventListeners();
-                
-                // 初始渲染
-                this.render();
-                
-                this.updateStatus('思维导图初始化完成');
+
+            if (options.body) {
+                config.body = JSON.stringify(options.body);
             }
-            
-            createNode(content, x, y, isRoot = false) {
-                const nodeId = `node_${this.nextNodeId++}`;
-                const node = {
-                    id: nodeId,
-                    content: content,
-                    x: x,
-                    y: y,
-                    width: 120,
-                    height: 40,
-                    isRoot: isRoot,
-                    parentId: null,
-                    children: []
+
+            try {
+                const response = await fetch(url, config);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || 'API request failed');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('API Error:', error);
+                updateStatus(`API 错误: ${error.message}`, 'error');
+                throw error;
+            }
+        }
+
+        // 用户认证功能
+        async function register() {
+            const email = document.getElementById('auth-email').value;
+            const username = document.getElementById('auth-username').value;
+            const password = document.getElementById('auth-password').value;
+
+            if (!email || !username || !password) {
+                updateStatus('请填写所有字段', 'error');
+                return;
+            }
+
+            try {
+                updateStatus('正在注册...', 'loading');
+                const result = await apiCall('auth/register', {
+                    method: 'POST',
+                    body: { email, username, password }
+                });
+
+                AppState.user = result.user;
+                AppState.token = result.token;
+                localStorage.setItem('mindmap_token', result.token);
+                localStorage.setItem('mindmap_user', JSON.stringify(result.user));
+
+                updateStatus('注册成功！', 'success');
+                hideAuthModal();
+                updateUI();
+                loadCloudMindMaps();
+            } catch (error) {
+                updateStatus(`注册失败: ${error.message}`, 'error');
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+
+            if (!email || !password) {
+                updateStatus('请填写邮箱和密码', 'error');
+                return;
+            }
+
+            try {
+                updateStatus('正在登录...', 'loading');
+                const result = await apiCall('auth/login', {
+                    method: 'POST',
+                    body: { email, password }
+                });
+
+                AppState.user = result.user;
+                AppState.token = result.token;
+                localStorage.setItem('mindmap_token', result.token);
+                localStorage.setItem('mindmap_user', JSON.stringify(result.user));
+
+                updateStatus('登录成功！', 'success');
+                hideAuthModal();
+                updateUI();
+                loadCloudMindMaps();
+            } catch (error) {
+                updateStatus(`登录失败: ${error.message}`, 'error');
+            }
+        }
+
+        function logout() {
+            AppState.user = null;
+            AppState.token = null;
+            localStorage.removeItem('mindmap_token');
+            localStorage.removeItem('mindmap_user');
+            updateUI();
+            updateStatus('已退出登录', 'info');
+        }
+
+        // 思维导图云端操作
+        async function saveToCloud() {
+            if (!AppState.user) {
+                updateStatus('请先登录', 'error');
+                return;
+            }
+
+            if (!AppState.currentMindMap) {
+                updateStatus('请先创建思维导图', 'error');
+                return;
+            }
+
+            try {
+                updateStatus('正在保存到云端...', 'loading');
+                
+                const mindmapData = {
+                    title: AppState.currentMindMap.title || '未命名思维导图',
+                    content: JSON.stringify(AppState.currentMindMap.data)
                 };
-                
-                this.nodes.push(node);
-                return node;
-            }
-            
-            addChildNode(parentNode, content = '新节点') {
-                if (!parentNode) return null;
-                
-                // 计算子节点位置（基于父节点位置）
-                const childX = parentNode.x + 200;
-                const childY = parentNode.y + (parentNode.children.length * 60);
-                
-                const childNode = this.createNode(content, childX, childY);
-                childNode.parentId = parentNode.id;
-                parentNode.children.push(childNode.id);
-                
-                this.render();
-                return childNode;
-            }
-            
-            addSiblingNode(node, content = '新节点') {
-                if (!node || node.isRoot) return null;
-                
-                const parentNode = this.nodes.find(n => n.id === node.parentId);
-                if (!parentNode) return null;
-                
-                // 计算兄弟节点位置
-                const siblingIndex = parentNode.children.indexOf(node.id);
-                const siblingX = parentNode.x + 200;
-                const siblingY = parentNode.y + ((siblingIndex + 1) * 60);
-                
-                const siblingNode = this.createNode(content, siblingX, siblingY);
-                siblingNode.parentId = parentNode.id;
-                
-                // 插入到兄弟节点之后
-                parentNode.children.splice(siblingIndex + 1, 0, siblingNode.id);
-                
-                this.render();
-                return siblingNode;
-            }
-            
-            deleteNode(node) {
-                if (!node || node.isRoot) return false;
-                
-                // 递归删除所有子节点
-                const deleteRecursive = (nodeId) => {
-                    const nodeToDelete = this.nodes.find(n => n.id === nodeId);
-                    if (!nodeToDelete) return;
-                    
-                    // 删除所有子节点
-                    nodeToDelete.children.forEach(childId => {
-                        deleteRecursive(childId);
+
+                if (AppState.currentMindMap.id) {
+                    // 更新现有思维导图
+                    await apiCall('mindmaps', {
+                        method: 'PUT',
+                        body: {
+                            id: AppState.currentMindMap.id,
+                            ...mindmapData
+                        }
                     });
+                    updateStatus('思维导图已更新到云端', 'success');
+                } else {
+                    // 创建新思维导图
+                    const result = await apiCall('mindmaps', {
+                        method: 'POST',
+                        body: mindmapData
+                    });
+                    AppState.currentMindMap.id = result.id;
+                    updateStatus('思维导图已保存到云端', 'success');
+                }
+
+                loadCloudMindMaps();
+            } catch (error) {
+                updateStatus(`保存失败: ${error.message}`, 'error');
+            }
+        }
+
+        async function loadCloudMindMaps() {
+            if (!AppState.user) return;
+
+            try {
+                const result = await apiCall('mindmaps');
+                AppState.mindMaps = result.mindmaps;
+                renderMindMapList();
+            } catch (error) {
+                console.error('Failed to load mindmaps:', error);
+            }
+        }
+
+        async function loadMindMapFromCloud(mindmapId) {
+            try {
+                updateStatus('正在加载思维导图...', 'loading');
+                
+                // 这里需要根据实际API调整
+                const mindmap = AppState.mindMaps.find(m => m.id === mindmapId);
+                if (mindmap) {
+                    // 在实际应用中，这里需要调用API获取完整内容
+                    AppState.currentMindMap = {
+                        id: mindmap.id,
+                        title: mindmap.title,
+                        data: JSON.parse(mindmap.content)
+                    };
                     
-                    // 从父节点的children中移除
-                    if (nodeToDelete.parentId) {
-                        const parent = this.nodes.find(n => n.id === nodeToDelete.parentId);
-                        if (parent) {
-                            parent.children = parent.children.filter(id => id !== nodeId);
-                        }
-                    }
-                    
-                    // 从节点列表中移除
-                    this.nodes = this.nodes.filter(n => n.id !== nodeId);
-                };
-                
-                deleteRecursive(node.id);
-                
-                if (this.selectedNode && this.selectedNode.id === node.id) {
-                    this.selectedNode = null;
+                    // 重新初始化思维导图
+                    initMindMap();
+                    updateStatus('思维导图加载成功', 'success');
                 }
-                
-                this.render();
-                return true;
+            } catch (error) {
+                updateStatus(`加载失败: ${error.message}`, 'error');
             }
-            
-            selectNode(node) {
-                // 移除之前选中节点的样式
-                if (this.selectedNode) {
-                    const prevElement = document.getElementById(this.selectedNode.id);
-                    if (prevElement) {
-                        prevElement.classList.remove('selected');
+        }
+
+        async function shareMindMap() {
+            if (!AppState.user || !AppState.currentMindMap) {
+                updateStatus('请先登录并选择思维导图', 'error');
+                return;
+            }
+
+            try {
+                updateStatus('正在生成分享链接...', 'loading');
+                const result = await apiCall('mindmaps/share', {
+                    method: 'POST',
+                    body: {
+                        mindmap_id: AppState.currentMindMap.id,
+                        expires_hours: 24
                     }
-                }
-                
-                this.selectedNode = node;
-                
-                // 添加新选中节点的样式
-                if (node) {
-                    const element = document.getElementById(node.id);
-                    if (element) {
-                        element.classList.add('selected');
-                    }
-                }
-            }
-            
-            startEditNode(node) {
-                if (!node) return;
-                
-                const element = document.getElementById(node.id);
-                if (!element) return;
-                
-                element.classList.add('editing');
-                const editInput = element.querySelector('.node-edit');
-                editInput.value = node.content;
-                editInput.focus();
-                editInput.select();
-            }
-            
-            finishEditNode(node, newContent) {
-                if (!node) return;
-                
-                const element = document.getElementById(node.id);
-                if (!element) return;
-                
-                element.classList.remove('editing');
-                node.content = newContent || '未命名';
-                
-                this.render();
-            }
-            
-            render() {
-                // 清空容器
-                this.container.innerHTML = '';
-                
-                // 先渲染连接线
-                this.renderConnections();
-                
-                // 再渲染节点（节点在上层）
-                this.nodes.forEach(node => {
-                    this.renderNode(node);
                 });
+
+                const shareUrl = `${window.location.origin}/share/${result.token}`;
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    updateStatus('分享链接已复制到剪贴板', 'success');
+                });
+            } catch (error) {
+                updateStatus(`分享失败: ${error.message}`, 'error');
             }
-            
-            renderNode(node) {
-                const nodeElement = document.createElement('div');
-                nodeElement.id = node.id;
-                nodeElement.className = `mindmap-node ${node.isRoot ? 'root' : 'child'}`;
-                nodeElement.style.left = `${node.x}px`;
-                nodeElement.style.top = `${node.y}px`;
-                
-                nodeElement.innerHTML = `
-                    <div class="node-content">${node.content}</div>
-                    <input class="node-edit" type="text" value="${node.content}">
+        }
+
+        // UI 更新函数
+        function updateUI() {
+            const userInfo = document.getElementById('user-info');
+            const controls = document.getElementById('controls');
+            const cloudMindmaps = document.getElementById('cloud-mindmaps');
+
+            if (AppState.user) {
+                userInfo.innerHTML = `
+                    <span>欢迎，${AppState.user.username}</span>
+                    <button class="btn btn-danger" onclick="logout()">退出</button>
                 `;
-                
-                // 添加事件监听
-                nodeElement.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.selectNode(node);
-                });
-                
-                nodeElement.addEventListener('dblclick', (e) => {
-                    e.stopPropagation();
-                    this.startEditNode(node);
-                });
-                
-                // 拖拽功能
-                nodeElement.addEventListener('mousedown', (e) => {
-                    if (e.target.classList.contains('node-edit')) return;
-                    
-                    this.isDragging = true;
-                    this.selectNode(node);
-                    this.dragOffset.x = e.clientX - node.x;
-                    this.dragOffset.y = e.clientY - node.y;
-                    
-                    e.preventDefault();
-                });
-                
-                this.container.appendChild(nodeElement);
-                
-                // 编辑输入框事件
-                const editInput = nodeElement.querySelector('.node-edit');
-                editInput.addEventListener('blur', () => {
-                    this.finishEditNode(node, editInput.value);
-                });
-                
-                editInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        this.finishEditNode(node, editInput.value);
-                    } else if (e.key === 'Escape') {
-                        this.finishEditNode(node, node.content); // 取消编辑
-                    }
-                });
-            }
-            
-            renderConnections() {
-                // 清空现有连接
-                this.connections.forEach(conn => {
-                    if (conn.element && conn.element.parentNode) {
-                        conn.element.parentNode.removeChild(conn.element);
-                    }
-                });
-                
-                this.connections = [];
-                
-                // 为每个有父节点的节点创建连接
-                this.nodes.forEach(node => {
-                    if (node.parentId) {
-                        const parentNode = this.nodes.find(n => n.id === node.parentId);
-                        if (parentNode) {
-                            this.createConnection(parentNode, node);
-                        }
-                    }
-                });
-            }
-            
-            createConnection(fromNode, toNode) {
-                // 计算连接线的起点和终点
-                const startX = fromNode.x + fromNode.width;
-                const startY = fromNode.y + fromNode.height / 2;
-                const endX = toNode.x;
-                const endY = toNode.y + toNode.height / 2;
-                
-                // 计算连接线的长度和角度
-                const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
-                const angle = Math.atan2(endY - startY, endX - startX) * 180 / Math.PI;
-                
-                // 创建连接线元素
-                const connectionElement = document.createElement('div');
-                connectionElement.className = 'mindmap-connection';
-                connectionElement.style.width = `${length}px`;
-                connectionElement.style.height = '2px';
-                connectionElement.style.left = `${startX}px`;
-                connectionElement.style.top = `${startY}px`;
-                connectionElement.style.transform = `rotate(${angle}deg)`;
-                
-                this.container.appendChild(connectionElement);
-                
-                // 保存连接信息
-                this.connections.push({
-                    from: fromNode.id,
-                    to: toNode.id,
-                    element: connectionElement
-                });
-            }
-            
-            setupEventListeners() {
-                // 鼠标移动事件（用于拖拽）
-                document.addEventListener('mousemove', (e) => {
-                    if (!this.isDragging || !this.selectedNode) return;
-                    
-                    this.selectedNode.x = e.clientX - this.dragOffset.x;
-                    this.selectedNode.y = e.clientY - this.dragOffset.y;
-                    
-                    this.render();
-                });
-                
-                // 鼠标释放事件
-                document.addEventListener('mouseup', () => {
-                    this.isDragging = false;
-                });
-                
-                // 键盘事件
-                document.addEventListener('keydown', (e) => {
-                    if (!this.selectedNode) return;
-                    
-                    switch(e.key) {
-                        case 'Tab':
-                            e.preventDefault();
-                            this.addChildNode(this.selectedNode);
-                            break;
-                        case 'Enter':
-                            e.preventDefault();
-                            this.addSiblingNode(this.selectedNode);
-                            break;
-                        case 'F2':
-                            e.preventDefault();
-                            this.startEditNode(this.selectedNode);
-                            break;
-                        case 'Delete':
-                            e.preventDefault();
-                            this.deleteNode(this.selectedNode);
-                            break;
-                        case 's':
-                            if (e.ctrlKey) {
-                                e.preventDefault();
-                                this.saveToLocalStorage();
-                            }
-                            break;
-                    }
-                });
-                
-                // 点击空白处取消选择
-                this.container.addEventListener('click', (e) => {
-                    if (e.target === this.container) {
-                        this.selectNode(null);
-                    }
-                });
-            }
-            
-            // 数据持久化
-            saveToLocalStorage() {
-                const data = {
-                    nodes: this.nodes,
-                    nextNodeId: this.nextNodeId
-                };
-                
-                localStorage.setItem('simple-mindmap-data', JSON.stringify(data));
-                this.updateStatus('思维导图已保存');
-            }
-            
-            loadFromLocalStorage() {
-                const savedData = localStorage.getItem('simple-mindmap-data');
-                if (!savedData) {
-                    this.updateStatus('没有找到保存的数据');
-                    return false;
-                }
-                
-                try {
-                    const data = JSON.parse(savedData);
-                    this.nodes = data.nodes;
-                    this.nextNodeId = data.nextNodeId;
-                    this.selectedNode = null;
-                    
-                    this.render();
-                    this.updateStatus('思维导图已加载');
-                    return true;
-                } catch (error) {
-                    this.updateStatus('加载失败: ' + error.message, 'error');
-                    return false;
-                }
-            }
-            
-            exportAsJSON() {
-                const data = {
-                    nodes: this.nodes,
-                    nextNodeId: this.nextNodeId,
-                    exportDate: new Date().toISOString(),
-                    version: '1.0'
-                };
-                
-                const blob = new Blob([JSON.stringify(data, null, 2)], { 
-                    type: 'application/json' 
-                });
-                
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `mindmap-${new Date().getTime()}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-                
-                this.updateStatus('思维导图已导出为JSON');
-            }
-            
-            reset() {
-                if (confirm('确定要重置思维导图吗？所有未保存的更改将丢失。')) {
-                    this.init();
-                    this.updateStatus('思维导图已重置');
-                }
-            }
-            
-            updateStatus(message, type = 'success') {
-                const statusContainer = document.getElementById('status-messages');
-                statusContainer.innerHTML = '';
-                
-                const statusItem = document.createElement('div');
-                statusItem.className = `status-item status-${type}`;
-                statusItem.textContent = message;
-                
-                statusContainer.appendChild(statusItem);
-                
-                console.log(`[${type}] ${message}`);
+                controls.style.display = 'flex';
+                cloudMindmaps.style.display = 'block';
+            } else {
+                userInfo.innerHTML = `
+                    <span>请登录</span>
+                    <button class="btn" onclick="showAuthModal()">登录/注册</button>
+                `;
+                controls.style.display = 'none';
+                cloudMindmaps.style.display = 'none';
             }
         }
-        
-        // 应用控制器
-        class MindMapApp {
-            constructor() {
-                this.mindMap = null;
-                this.init();
-            }
+
+        function renderMindMapList() {
+            const list = document.getElementById('mindmap-list');
+            list.innerHTML = '';
+
+            AppState.mindMaps.forEach(mindmap => {
+                const item = document.createElement('div');
+                item.className = 'mindmap-item';
+                item.innerHTML = `
+                    <div class="mindmap-title">${mindmap.title}</div>
+                    <div class="mindmap-meta">
+                        更新于: ${new Date(mindmap.updated_at).toLocaleDateString()}
+                    </div>
+                `;
+                item.addEventListener('click', () => loadMindMapFromCloud(mindmap.id));
+                list.appendChild(item);
+            });
+        }
+
+        function updateStatus(message, type = 'info') {
+            const container = document.getElementById('status-messages');
+            const messageEl = document.createElement('div');
+            messageEl.className = `status-item status-${type}`;
+            messageEl.textContent = message;
+            container.appendChild(messageEl);
             
-            init() {
-                // 初始化思维导图
-                this.mindMap = new SimpleMindMap('mindmap-container');
-                
-                // 设置按钮事件
-                this.setupControls();
-            }
-            
-            setupControls() {
-                document.getElementById('btn-new').addEventListener('click', () => {
-                    if (confirm('确定要创建新的思维导图吗？当前内容将丢失。')) {
-                        this.mindMap.init();
-                    }
-                });
-                
-                document.getElementById('btn-save').addEventListener('click', () => {
-                    this.mindMap.saveToLocalStorage();
-                });
-                
-                document.getElementById('btn-export').addEventListener('click', () => {
-                    this.mindMap.exportAsJSON();
-                });
-                
-                document.getElementById('btn-load').addEventListener('click', () => {
-                    this.mindMap.loadFromLocalStorage();
-                });
-                
-                document.getElementById('btn-reset').addEventListener('click', () => {
-                    this.mindMap.reset();
-                });
+            // 保持最后3条消息
+            const messages = container.querySelectorAll('.status-item');
+            if (messages.length > 3) {
+                messages[0].remove();
             }
         }
-        
+
+        function showAuthModal() {
+            document.getElementById('auth-modal').style.display = 'flex';
+        }
+
+        function hideAuthModal() {
+            document.getElementById('auth-modal').style.display = 'none';
+            // 清空表单
+            document.getElementById('auth-email').value = '';
+            document.getElementById('auth-username').value = '';
+            document.getElementById('auth-password').value = '';
+        }
+
+        // 思维导图初始化（简化版）
+        function initMindMap() {
+            const container = document.getElementById('mindmap-container');
+            // 这里集成之前的纯JS思维导图实现
+            container.innerHTML = `
+                <div style="padding: 20px;">
+                    <h3>${AppState.currentMindMap?.title || '新思维导图'}</h3>
+                    <p>基于 D1 数据库的云端思维导图</p>
+                    <div style="margin-top: 20px;">
+                        <p>🚧 思维导图编辑器正在加载...</p>
+                        <p>这里将集成之前的纯 JavaScript 思维导图实现</p>
+                    </div>
+                </div>
+            `;
+        }
+
         // 初始化应用
-        let app;
-        document.addEventListener('DOMContentLoaded', () => {
-            app = new MindMapApp();
-            window.mindMapApp = app;
-        });
+        function initApp() {
+            // 检查本地存储的登录信息
+            const savedToken = localStorage.getItem('mindmap_token');
+            const savedUser = localStorage.getItem('mindmap_user');
+            
+            if (savedToken && savedUser) {
+                AppState.token = savedToken;
+                AppState.user = JSON.parse(savedUser);
+                updateUI();
+                loadCloudMindMaps();
+            }
+
+            // 设置按钮事件
+            document.getElementById('btn-new').addEventListener('click', () => {
+                AppState.currentMindMap = {
+                    title: '新思维导图',
+                    data: { nodes: [], connections: [] }
+                };
+                initMindMap();
+            });
+
+            document.getElementById('btn-save').addEventListener('click', saveToCloud);
+            document.getElementById('btn-load').addEventListener('click', loadCloudMindMaps);
+            document.getElementById('btn-share').addEventListener('click', shareMindMap);
+
+            // 初始化思维导图
+            initMindMap();
+        }
+
+        // 启动应用
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
