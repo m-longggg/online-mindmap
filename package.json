@@ -1,13 +1,22 @@
 {
-  "name": "online-mindmap",
+  "name": "online-mindmap-template",
   "version": "1.0.0",
-  "description": "纯静态在线思维导图应用",
+  "description": "基于指定GitHub模板的在线思维导图应用",
   "type": "module",
   "scripts": {
     "build": "echo \"No build required for static HTML\"",
     "dev": "echo \"Open index.html directly in browser\""
   },
-  "keywords": ["mindmap", "static", "cloudflare"],
+  "keywords": [
+    "mindmap",
+    "jsmind",
+    "static",
+    "cloudflare"
+  ],
   "author": "Your Name",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/online-mindmap"
+  }
 }
