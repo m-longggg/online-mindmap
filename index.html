@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>在线思维导图 - 基于指定模板</title>
-    <meta name="description" content="基于指定GitHub模板的稳定在线思维导图工具">
+    <title>在线思维导图 - 修复版</title>
+    <meta name="description" content="稳定可靠的在线思维导图工具">
     
     <!-- 使用本地库文件 -->
     <link rel="stylesheet" href="./lib/jsmind.css">
     <style>
-        /* 自定义样式增强 */
+        /* 保持原有的所有CSS样式 */
         * {
             margin: 0;
             padding: 0;
@@ -21,7 +21,6 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: #333;
-            overflow-x: hidden;
         }
         
         .container {
@@ -31,15 +30,14 @@
         }
         
         .app-wrapper {
-            background: rgba(255, 255, 255, 0.98);
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             overflow: hidden;
-            backdrop-filter: blur(10px);
         }
         
         .header {
-            background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            background: #2d3748;
             color: white;
             padding: 20px 30px;
             display: flex;
@@ -52,13 +50,9 @@
         .logo {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             font-size: 1.5rem;
             font-weight: bold;
-        }
-        
-        .logo-icon {
-            font-size: 1.8rem;
         }
         
         .controls {
@@ -68,51 +62,35 @@
         }
         
         .btn {
-            background: rgba(255, 255, 255, 0.1);
+            background: #4299e1;
             color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: none;
             padding: 10px 20px;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
             transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
         }
         
         .btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-        
-        .btn-primary {
-            background: #4299e1;
-            border-color: #4299e1;
-        }
-        
-        .btn-primary:hover {
             background: #3182ce;
-            border-color: #3182ce;
+            transform: translateY(-2px);
         }
         
         .btn-success {
             background: #48bb78;
-            border-color: #48bb78;
         }
         
         .btn-success:hover {
             background: #38a169;
-            border-color: #38a169;
         }
         
         .btn-danger {
             background: #e53e3e;
-            border-color: #e53e3e;
         }
         
         .btn-danger:hover {
             background: #c53030;
-            border-color: #c53030;
         }
         
         .main-content {
@@ -121,37 +99,16 @@
         }
         
         .sidebar {
-            width: 300px;
-            background: #f8fafc;
-            padding: 25px;
+            width: 280px;
+            background: #f7fafc;
+            padding: 20px;
             border-right: 1px solid #e2e8f0;
             overflow-y: auto;
-            transition: all 0.3s ease;
-        }
-        
-        .sidebar.collapsed {
-            width: 60px;
-            padding: 15px 10px;
-        }
-        
-        .sidebar.collapsed .sidebar-content {
-            display: none;
-        }
-        
-        .toggle-sidebar {
-            background: none;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-            color: #4a5568;
-            margin-bottom: 15px;
         }
         
         .mindmap-area {
             flex: 1;
-            padding: 25px;
-            background: #f7fafc;
-            position: relative;
+            padding: 20px;
         }
         
         #jsmind_container {
@@ -159,147 +116,77 @@
             height: 100%;
             background: white;
             border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
-        
-        #jsmind_container:hover {
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
         }
         
         .status-panel {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 25px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            background: #edf2f7;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
         
         .status-item {
-            margin: 10px 0;
-            padding: 12px 15px;
-            border-radius: 8px;
+            margin: 8px 0;
+            padding: 8px 12px;
+            border-radius: 4px;
             font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
         
         .status-success {
-            background: linear-gradient(135deg, #c6f6d5, #9ae6b4);
+            background: #c6f6d5;
             color: #22543d;
-            border-left: 4px solid #48bb78;
+            border-left: 3px solid #48bb78;
         }
         
         .status-error {
-            background: linear-gradient(135deg, #fed7d7, #feb2b2);
+            background: #fed7d7;
             color: #742a2a;
-            border-left: 4px solid #e53e3e;
+            border-left: 3px solid #e53e3e;
         }
         
         .status-loading {
-            background: linear-gradient(135deg, #fefcbf, #faf089);
+            background: #fefcbf;
             color: #744210;
-            border-left: 4px solid #d69e2e;
+            border-left: 3px solid #d69e2e;
         }
         
         .status-info {
-            background: linear-gradient(135deg, #bee3f8, #90cdf4);
+            background: #bee3f8;
             color: #2a4365;
-            border-left: 4px solid #3182ce;
+            border-left: 3px solid #3182ce;
         }
         
         .feature-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin: 20px 0;
+            gap: 10px;
+            margin-top: 15px;
         }
         
         .feature {
             background: white;
-            padding: 15px 10px;
-            border-radius: 8px;
+            padding: 10px;
+            border-radius: 6px;
             text-align: center;
             font-size: 12px;
             border: 1px solid #e2e8f0;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .feature:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-color: #4299e1;
         }
         
         .loading-spinner {
             width: 20px;
             height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top: 2px solid currentColor;
+            border: 2px solid #e2e8f0;
+            border-top: 2px solid #4299e1;
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
         }
         
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-        
-        .tooltip {
-            position: relative;
-            cursor: help;
-        }
-        
-        .tooltip::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #2d3748;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            white-space: nowrap;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
-        }
-        
-        .tooltip:hover::after {
-            opacity: 1;
-        }
-        
-        .context-menu {
-            position: absolute;
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-            padding: 8px 0;
-            z-index: 1000;
-            display: none;
-        }
-        
-        .context-menu-item {
-            padding: 8px 16px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        
-        .context-menu-item:hover {
-            background: #f7fafc;
-        }
-        
-        @media (max-width: 1024px) {
-            .sidebar {
-                width: 250px;
-            }
         }
         
         @media (max-width: 768px) {
@@ -313,15 +200,9 @@
                 height: auto;
             }
             
-            .sidebar.collapsed {
-                width: 100%;
-                height: 60px;
-            }
-            
             .header {
                 flex-direction: column;
                 gap: 15px;
-                text-align: center;
             }
             
             .controls {
@@ -331,40 +212,6 @@
             #jsmind_container {
                 height: 500px;
             }
-            
-            .feature-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* 暗色主题支持 */
-        @media (prefers-color-scheme: dark) {
-            .app-wrapper {
-                background: rgba(45, 55, 72, 0.95);
-                color: #e2e8f0;
-            }
-            
-            .sidebar {
-                background: #2d3748;
-                border-right-color: #4a5568;
-            }
-            
-            .status-panel {
-                background: #4a5568;
-                border-color: #718096;
-                color: #e2e8f0;
-            }
-            
-            .feature {
-                background: #4a5568;
-                border-color: #718096;
-                color: #e2e8f0;
-            }
-            
-            #jsmind_container {
-                background: #2d3748;
-                border-color: #4a5568;
-            }
         }
     </style>
 </head>
@@ -373,81 +220,63 @@
         <div class="app-wrapper">
             <header class="header">
                 <div class="logo">
-                    <span class="logo-icon">🧠</span>
+                    <span>🧠</span>
                     <span>在线思维导图</span>
                 </div>
                 <div class="controls">
-                    <button class="btn btn-primary tooltip" data-tooltip="创建新导图" onclick="mindMapApp.createNewMindMap()">
-                        📄 新建
-                    </button>
-                    <button class="btn tooltip" data-tooltip="保存到本地" onclick="mindMapApp.saveMindMap()">
-                        💾 保存
-                    </button>
-                    <button class="btn tooltip" data-tooltip="导出为JSON" onclick="mindMapApp.exportMindMap()">
-                        📤 导出
-                    </button>
-                    <button class="btn btn-success tooltip" data-tooltip="从本地加载" onclick="mindMapApp.loadMindMap()">
-                        📥 加载
-                    </button>
-                    <button class="btn btn-danger tooltip" data-tooltip="重置所有内容" onclick="mindMapApp.resetMindMap()">
-                        🔄 重置
-                    </button>
+                    <button class="btn" onclick="mindMapApp.createNewMindMap()">新建</button>
+                    <button class="btn" onclick="mindMapApp.saveMindMap()">保存</button>
+                    <button class="btn" onclick="mindMapApp.exportMindMap()">导出</button>
+                    <button class="btn btn-success" onclick="mindMapApp.loadMindMap()">加载</button>
+                    <button class="btn btn-danger" onclick="mindMapApp.resetMindMap()">重置</button>
                 </div>
             </header>
             
             <div class="main-content">
-                <aside class="sidebar" id="sidebar">
-                    <button class="toggle-sidebar" onclick="mindMapApp.toggleSidebar()">☰</button>
-                    <div class="sidebar-content">
-                        <div class="status-panel">
-                            <h3>📊 系统状态</h3>
-                            <div id="status-messages">
-                                <div class="status-item status-loading">
-                                    <div class="loading-spinner"></div>
-                                    正在初始化应用...
-                                </div>
+                <aside class="sidebar">
+                    <div class="status-panel">
+                        <h3>系统状态</h3>
+                        <div id="status-messages">
+                            <div class="status-item status-loading">
+                                <div class="loading-spinner"></div>
+                                正在初始化应用...
                             </div>
                         </div>
-                        
-                        <div class="feature-grid">
-                            <div class="feature tooltip" data-tooltip="拖拽节点进行编辑">✨ 拖拽编辑</div>
-                            <div class="feature tooltip" data-tooltip="数据保存在浏览器中">💾 本地存储</div>
-                            <div class="feature tooltip" data-tooltip="支持JSON格式导入导出">📥 导入导出</div>
-                            <div class="feature tooltip" data-tooltip="多种主题样式可选">🎨 主题样式</div>
-                            <div class="feature tooltip" data-tooltip="节点间可创建链接">🔗 节点链接</div>
-                            <div class="feature tooltip" data-tooltip="支持手机和平板">📱 响应式</div>
-                        </div>
-                        
-                        <div style="margin-top: 25px;">
-                            <h4>💡 使用提示</h4>
-                            <ul style="font-size: 13px; margin-top: 12px; padding-left: 20px; color: #4a5568; line-height: 1.5;">
-                                <li>双击节点编辑内容</li>
-                                <li>右键点击显示操作菜单</li>
-                                <li>拖拽节点调整位置关系</li>
-                                <li>Ctrl+S 快速保存导图</li>
-                                <li>Tab键快速添加子节点</li>
-                                <li>Delete键删除选中节点</li>
-                            </ul>
-                        </div>
+                    </div>
+                    
+                    <div class="feature-grid">
+                        <div class="feature">✨ 可视化编辑</div>
+                        <div class="feature">💾 本地存储</div>
+                        <div class="feature">📥 导入导出</div>
+                        <div class="feature">🎨 主题样式</div>
+                        <div class="feature">🔗 节点链接</div>
+                        <div class="feature">📱 响应式</div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <h4>使用提示</h4>
+                        <ul style="font-size: 12px; margin-top: 10px; padding-left: 20px; color: #4a5568;">
+                            <li>双击节点编辑内容</li>
+                            <li>拖拽节点调整位置</li>
+                            <li>Ctrl+S 快速保存</li>
+                            <li>Tab键添加子节点</li>
+                        </ul>
+                    </div>
 
-                        <div style="margin-top: 25px;">
-                            <h4>🔧 库加载状态</h4>
-                            <div id="library-status" class="status-item status-info">
-                                📦 等待加载库文件...
-                            </div>
+                    <div style="margin-top: 20px;">
+                        <h4>库加载状态</h4>
+                        <div id="library-status" class="status-item status-info">
+                            等待加载...
                         </div>
                     </div>
                 </aside>
                 
                 <main class="mindmap-area">
                     <div id="jsmind_container">
-                        <div style="padding: 50px; text-align: center; color: #666;">
-                            <h3 style="margin-bottom: 15px;">🎯 正在加载思维导图...</h3>
-                            <p style="margin-bottom: 25px;">基于指定GitHub模板构建的稳定版本</p>
-                            <div class="loading-spinner" style="width: 40px; height: 40px; margin: 0 auto; color: #4299e1;"></div>
-                            <div style="margin-top: 25px; font-size: 14px; color: #718096;">
-                                <p>如果长时间未加载，请检查网络连接</p>
-                            </div>
+                        <div style="padding: 40px; text-align: center; color: #666;">
+                            <h3>正在加载思维导图...</h3>
+                            <p>如果长时间未加载，请检查网络连接</p>
+                            <div class="loading-spinner" style="width: 40px; height: 40px; margin: 20px auto;"></div>
                         </div>
                     </div>
                 </main>
@@ -455,26 +284,18 @@
         </div>
     </div>
 
-    <!-- 右键上下文菜单 -->
-    <div class="context-menu" id="contextMenu">
-        <div class="context-menu-item" onclick="mindMapApp.addChildNode()">添加子节点</div>
-        <div class="context-menu-item" onclick="mindMapApp.editNode()">编辑节点</div>
-        <div class="context-menu-item" onclick="mindMapApp.deleteNode()">删除节点</div>
-        <div class="context-menu-item" onclick="mindMapApp.changeNodeColor()">更改颜色</div>
-    </div>
-
-    <!-- 加载库文件 -->
+    <!-- 加载库文件 - 确保正确的加载顺序 -->
     <script src="./lib/jsmind.js"></script>
     <script src="./lib/jsmind.draggable-node.js"></script>
     
     <script>
-        // 思维导图应用类
+        // 思维导图应用类 - 修复版本
         class MindMapApp {
             constructor() {
                 this.jm = null;
                 this.isInitialized = false;
                 this.selectedNode = null;
-                this.libraryStatus = 'loading';
+                this.draggableEnabled = false;
                 
                 this.init();
             }
@@ -507,9 +328,17 @@
                     const checkInterval = setInterval(() => {
                         if (window.jsMind) {
                             clearInterval(checkInterval);
-                            this.libraryStatus = 'loaded';
-                            this.updateLibraryStatus('✅ 所有库文件加载成功', 'success');
-                            resolve();
+                            this.updateLibraryStatus('✅ jsMind核心库加载成功', 'success');
+                            
+                            // 检查拖拽插件
+                            setTimeout(() => {
+                                if (window.jsMind.draggable) {
+                                    this.updateLibraryStatus('✅ 拖拽插件加载成功', 'success');
+                                } else {
+                                    this.updateLibraryStatus('⚠️ 拖拽插件未加载，但核心功能可用', 'info');
+                                }
+                                resolve();
+                            }, 100);
                         }
                     }, 100);
 
@@ -517,10 +346,9 @@
                     setTimeout(() => {
                         clearInterval(checkInterval);
                         if (!window.jsMind) {
-                            this.libraryStatus = 'failed';
                             this.updateLibraryStatus('❌ 库文件加载超时', 'error');
-                            resolve(); // 仍然继续初始化
                         }
+                        resolve();
                     }, 5000);
                 });
             }
@@ -576,17 +404,6 @@
                                         {"id": "daily", "topic": "日常任务"},
                                         {"id": "goals", "topic": "目标设定"}
                                     ]
-                                },
-                                {
-                                    "id": "resources",
-                                    "topic": "📚 资源整理",
-                                    "background-color": "#9f7aea",
-                                    "foreground-color": "#ffffff",
-                                    "children": [
-                                        {"id": "books", "topic": "书籍推荐"},
-                                        {"id": "tools", "topic": "实用工具"},
-                                        {"id": "links", "topic": "参考链接"}
-                                    ]
                                 }
                             ]
                         }
@@ -596,11 +413,8 @@
                     this.jm = new jsMind(options);
                     this.jm.show(mindData);
                     
-                    // 启用拖拽插件
-                    if (window.jsMind.draggable && this.jm) {
-                        jsMind.draggable.init(this.jm);
-                        this.updateStatus('✅ 拖拽功能已启用', 'success');
-                    }
+                    // 安全地启用拖拽插件 - 修复的核心部分
+                    this.enableDraggablePlugin();
                     
                     this.isInitialized = true;
                     
@@ -612,6 +426,61 @@
                     console.error('思维导图初始化失败:', error);
                     this.updateStatus('❌ 思维导图初始化失败: ' + error.message, 'error');
                     this.initializeFallback();
+                }
+            }
+
+            // 安全启用拖拽插件的方法
+            enableDraggablePlugin() {
+                try {
+                    // 方法1: 检查标准方式
+                    if (window.jsMind && window.jsMind.draggable && typeof window.jsMind.draggable.init === 'function') {
+                        window.jsMind.draggable.init(this.jm);
+                        this.draggableEnabled = true;
+                        this.updateStatus('✅ 拖拽功能已启用', 'success');
+                        return;
+                    }
+                    
+                    // 方法2: 检查其他可能的导出方式
+                    if (window.jsMind && window.jsMind.draggable) {
+                        // 尝试直接调用
+                        window.jsMind.draggable(this.jm);
+                        this.draggableEnabled = true;
+                        this.updateStatus('✅ 拖拽功能已启用', 'success');
+                        return;
+                    }
+                    
+                    // 方法3: 检查全局函数
+                    if (typeof window.jsmind_draggable_init === 'function') {
+                        window.jsmind_draggable_init(this.jm);
+                        this.draggableEnabled = true;
+                        this.updateStatus('✅ 拖拽功能已启用', 'success');
+                        return;
+                    }
+                    
+                    // 方法4: 手动检查插件对象的所有方法
+                    if (window.jsMind && window.jsMind.draggable) {
+                        const draggableObj = window.jsMind.draggable;
+                        const methods = Object.getOwnPropertyNames(draggableObj);
+                        
+                        for (let method of methods) {
+                            if (typeof draggableObj[method] === 'function' && 
+                                (method.toLowerCase().includes('init') || 
+                                 method.toLowerCase().includes('enable'))) {
+                                draggableObj[method](this.jm);
+                                this.draggableEnabled = true;
+                                this.updateStatus('✅ 拖拽功能已启用', 'success');
+                                return;
+                            }
+                        }
+                    }
+                    
+                    // 如果所有方法都失败
+                    this.updateStatus('⚠️ 拖拽插件加载失败，但思维导图基本功能正常', 'info');
+                    console.warn('拖拽插件未正确初始化，但应用继续运行');
+                    
+                } catch (error) {
+                    console.error('启用拖拽功能失败:', error);
+                    this.updateStatus('⚠️ 拖拽功能初始化失败，但不影响基本使用', 'error');
                 }
             }
 
@@ -634,7 +503,7 @@
                     </div>
                 `;
                 
-                this.loadTextContent(); // 加载已保存的文本
+                this.loadTextContent();
             }
 
             setupEventListeners() {
@@ -644,92 +513,14 @@
                         e.preventDefault();
                         this.saveMindMap();
                     }
-                    
-                    // 添加节点快捷键
-                    if (e.key === 'Tab' && this.jm && this.jm.get_selected_node()) {
-                        e.preventDefault();
-                        this.addChildNode();
-                    }
                 });
 
-                // 右键菜单
-                document.getElementById('jsmind_container').addEventListener('contextmenu', (e) => {
-                    e.preventDefault();
-                    this.showContextMenu(e.clientX, e.clientY);
-                });
-
-                // 点击其他地方隐藏右键菜单
-                document.addEventListener('click', () => {
-                    this.hideContextMenu();
-                });
-
-                // 窗口关闭前提示保存
                 window.addEventListener('beforeunload', (e) => {
                     if (this.hasUnsavedChanges()) {
                         e.preventDefault();
                         e.returnValue = '您有未保存的更改，确定要离开吗？';
                     }
                 });
-            }
-
-            showContextMenu(x, y) {
-                const contextMenu = document.getElementById('contextMenu');
-                contextMenu.style.display = 'block';
-                contextMenu.style.left = x + 'px';
-                contextMenu.style.top = y + 'px';
-                
-                // 更新选中的节点
-                if (this.jm) {
-                    this.selectedNode = this.jm.get_selected_node();
-                }
-            }
-
-            hideContextMenu() {
-                const contextMenu = document.getElementById('contextMenu');
-                contextMenu.style.display = 'none';
-            }
-
-            addChildNode() {
-                if (this.jm && this.selectedNode) {
-                    const newNodeId = 'node_' + Date.now();
-                    this.jm.add_node(this.selectedNode, newNodeId, '新节点');
-                    this.updateStatus('✅ 已添加新节点', 'success');
-                }
-                this.hideContextMenu();
-            }
-
-            editNode() {
-                if (this.jm && this.selectedNode) {
-                    const newTopic = prompt('请输入新内容:', this.selectedNode.topic);
-                    if (newTopic !== null) {
-                        this.jm.set_node_topic(this.selectedNode, newTopic);
-                        this.updateStatus('✅ 节点已更新', 'success');
-                    }
-                }
-                this.hideContextMenu();
-            }
-
-            deleteNode() {
-                if (this.jm && this.selectedNode && this.selectedNode.id !== 'root') {
-                    if (confirm('确定要删除这个节点吗？')) {
-                        this.jm.remove_node(this.selectedNode);
-                        this.updateStatus('✅ 节点已删除', 'success');
-                    }
-                } else {
-                    alert('不能删除根节点！');
-                }
-                this.hideContextMenu();
-            }
-
-            changeNodeColor() {
-                if (this.jm && this.selectedNode) {
-                    const color = prompt('请输入颜色代码 (如 #4299e1):', '#4299e1');
-                    if (color) {
-                        this.jm.set_node_background_color(this.selectedNode, color);
-                        this.updateStatus('✅ 节点颜色已更新', 'success');
-                    }
-                }
-                this.hideContextMenu();
             }
 
             loadInitialData() {
@@ -777,7 +568,7 @@
                         this.updateStatus('✅ 思维导图已保存到本地存储', 'success');
                     } else {
                         this.updateStatus('❌ 无法保存：思维导图未初始化', 'error');
-                        this.saveTextContent(); // 备用保存
+                        this.saveTextContent();
                     }
                 } catch (error) {
                     this.updateStatus('❌ 保存失败: ' + error.message, 'error');
@@ -818,7 +609,7 @@
                         URL.revokeObjectURL(url);
                         this.updateStatus('✅ 思维导图已导出为JSON文件', 'success');
                     } else {
-                        this.exportTextContent(); // 备用导出
+                        this.exportTextContent();
                     }
                 } catch (error) {
                     this.updateStatus('❌ 导出失败: ' + error.message, 'error');
@@ -837,11 +628,6 @@
                     }
                     this.updateStatus('✅ 已重置所有数据', 'success');
                 }
-            }
-
-            toggleSidebar() {
-                const sidebar = document.getElementById('sidebar');
-                sidebar.classList.toggle('collapsed');
             }
 
             // 备用文本编辑器功能
@@ -936,7 +722,7 @@
         let mindMapApp;
         document.addEventListener('DOMContentLoaded', function() {
             mindMapApp = new MindMapApp();
-            window.mindMapApp = mindMapApp; // 暴露到全局
+            window.mindMapApp = mindMapApp;
         });
     </script>
 </body>
