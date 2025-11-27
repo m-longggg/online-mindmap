@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB"
 database_name = "mindmap-db"
-database_id = "mindmap-db"
+database_id = "05a1a513-b022-4582-8bce-a4134f5ef844"
 
 [env.production]
 routes = ["https://your-domain.pages.dev/*"]
